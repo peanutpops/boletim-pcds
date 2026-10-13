@@ -1,0 +1,26 @@
+# Ambientes Virtuais do Python
+.venv/
+
+# Caches e arquivos temporários do Python (qualquer nível de pasta)
+__pycache__/
+*.pyc
+*.pyo
+*.pyd
+
+# Arquivos de Dados e Bancos de Dados (Brutos e Filtrados)
+database/RAIS_VINC_PUB_NORDESTE/
+*.COMT
+*.parquet
+*.csv
+
+# Configurações de IDEs e Editores de Código
+.vscode/
+.idea/
+*.swp
+
+# Variáveis de Ambiente e Credenciais
+.env
+
+# Rascunhos / Sandboxes pessoais
+utils/sandbox.py
+markdowns/setup-pesquisa.md
