@@ -1,4 +1,4 @@
-FILEPATH = "rais2025_arapiraca.parquet"
+FILEPATH = "database/rais2025_arapiraca.parquet"
 COLUMNS = [
   "Sexo - Código", 
   "Idade",

@@ -1,0 +1,117 @@
+import pandas as pd
+import matplotlib.pyplot as plt
+import os
+from globals import *
+
+RESULTADOS = []
+
+# conversão de tipos
+base = pd.read_parquet(FILEPATH)
+
+for col in base.columns:
+    if pd.api.types.is_numeric_dtype(base[col]):
+        continue
+
+    s_clean = base[col].astype(str).str.replace(",", ".", regex=False).str.strip()
+
+    converted = pd.to_numeric(s_clean, errors="coerce")
+
+    if converted.notna().sum() > (0.5 * len(base)):
+        base[col] = converted.fillna(0)
+        if (base[col] % 1 == 0).all():
+            base[col] = base[col].astype(int)
+
+
+# filtragem de pcd's
+dataframe_pcd = base.loc[
+    (base["Tipo Deficiência - Código"] > 0),
+    COLUMNS
+    ]
+
+# quantos vínculos ativos em 31/12 existem no total?
+tipos_pcds = {
+    1: "Física",
+    2: "Auditiva",
+    3: "Visual",
+    4: "Intelectual",
+    5: "Múltipla",
+    6: "Reabilitado"
+}
+
+vinculos_ativos = base.loc[
+    base["Ind Vínculo Ativo 31/12 - Código"] == 1,
+]
+
+vinculos_ativos_pcds = vinculos_ativos.loc[
+    vinculos_ativos["Tipo Deficiência - Código"] > 0
+]
+
+RESULTADOS.append(f"Vínculos ativos em 31/12: {len(vinculos_ativos)}")
+RESULTADOS.append(f"Vínculos ativos em 31/12 (para pcds): {len(vinculos_ativos_pcds)}.")
+RESULTADOS.append(f"Participação de {len(vinculos_ativos_pcds) * 100 / len(vinculos_ativos):.2f}% no total de ativos.")
+
+dados = []
+
+for i in range(1, 7):
+    tipo_nome = tipos_pcds[i]
+    qtd = len(vinculos_ativos_pcds.loc[vinculos_ativos_pcds["Tipo Deficiência - Código"] == i])
+    pct = (qtd / len(vinculos_ativos_pcds) * 100) if len(vinculos_ativos_pcds) > 0 else 0
+    
+    dados.append({
+        "Tipo": tipo_nome,
+        "Quantitativo": qtd,
+        "Percentual(%)": pct
+    })
+
+df_quantitativo = pd.DataFrame(dados)
+
+df_chart = df_quantitativo.sort_values(by="Quantitativo", ascending=True)
+
+# GRÁFICO
+plt.style.use('seaborn-v0_8-whitegrid' if 'seaborn-v0_8-whitegrid' in plt.style.available else 'default')
+plt.rcParams['font.sans-serif'] = 'Arial'
+plt.rcParams['font.family'] = 'sans-serif'
+fig, ax = plt.subplots(figsize=(8, 4.5), dpi=300)
+
+# Criando as barras horizontais
+bars = ax.barh(df_chart["Tipo"], df_chart["Quantitativo"], color='#1B365D', height=0.65)
+
+# Adicionando os rótulos de valores ao lado de cada barra
+for bar, pct in zip(bars, df_chart["Percentual(%)"]):
+    width = bar.get_width()
+    ax.text(
+        width + 3, 
+        bar.get_y() + bar.get_height() / 2, 
+        f'{int(width)} ({pct:.2f}%)',
+        va='center', 
+        ha='left', 
+        fontsize=10, 
+        fontweight='bold', 
+        color='#333333'
+    )
+
+# Título e Rótulos do Gráfico
+ax.set_title("Distribuição de Trabalhadores PCD por Tipo de Deficiência\nArapiraca - 2025", 
+             fontsize=12, fontweight='bold', pad=15, loc='left')
+ax.set_xlabel("Número de Vínculos Ativos", fontsize=10)
+ax.set_xlim(0, max(df_chart["Quantitativo"]) * 1.2) # Margem para caber o texto ao lado da barra
+
+# Limpeza visual (remoção das bordas superior e direita)
+ax.spines['top'].set_visible(False)
+ax.spines['right'].set_visible(False)
+ax.spines['left'].set_color('#cccccc')
+ax.spines['bottom'].set_color('#cccccc')
+
+plt.tight_layout()
+
+# Exporta em PDF (para o Overleaf sem perda de qualidade) e PNG (para visualização rápida)
+plt.savefig("outputs/figures/grafico_pcds_tipos.pdf", format="pdf", bbox_inches="tight")
+plt.show()
+
+
+for string in RESULTADOS:
+    log_filepath = "outputs/logs/resumo_tipos_deficiencia.txt"
+    with open(log_filepath, "a", encoding="utf-8") as f:
+        f.write(string + "\n")
+
+print(f"\n[OK] Resumo salvo com sucesso em: '{log_filepath}'")
