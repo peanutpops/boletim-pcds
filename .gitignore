@@ -22,6 +22,7 @@ database/RAIS_VINC_PUB_NORDESTE/
 .env
 
 # Rascunhos / Sandboxes pessoais
+database/layout/
 outputs/
 utils/sandbox.py
 markdowns/setup-pesquisa.md
