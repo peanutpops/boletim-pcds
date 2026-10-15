@@ -5,23 +5,6 @@ from globals import *
 
 RESULTADOS = []
 
-# conversão de tipos
-base = pd.read_parquet(FILEPATH)
-
-for col in base.columns:
-    if pd.api.types.is_numeric_dtype(base[col]):
-        continue
-
-    s_clean = base[col].astype(str).str.replace(",", ".", regex=False).str.strip()
-
-    converted = pd.to_numeric(s_clean, errors="coerce")
-
-    if converted.notna().sum() > (0.5 * len(base)):
-        base[col] = converted.fillna(0)
-        if (base[col] % 1 == 0).all():
-            base[col] = base[col].astype(int)
-
-
 # filtragem de pcd's
 dataframe_pcd = base.loc[
     (base["Tipo Deficiência - Código"] > 0),
@@ -46,6 +29,7 @@ vinculos_ativos_pcds = vinculos_ativos.loc[
     vinculos_ativos["Tipo Deficiência - Código"] > 0
 ]
 
+RESULTADOS.append(f"Quantidade de PCD's registrados em 2025: {len(dataframe_pcd)}")
 RESULTADOS.append(f"Vínculos ativos em 31/12: {len(vinculos_ativos)}")
 RESULTADOS.append(f"Vínculos ativos em 31/12 (para pcds): {len(vinculos_ativos_pcds)}.")
 RESULTADOS.append(f"Participação de {len(vinculos_ativos_pcds) * 100 / len(vinculos_ativos):.2f}% no total de ativos.")
@@ -106,12 +90,5 @@ plt.tight_layout()
 
 # Exporta em PDF (para o Overleaf sem perda de qualidade) e PNG (para visualização rápida)
 plt.savefig("outputs/figures/grafico_pcds_tipos.pdf", format="pdf", bbox_inches="tight")
+plt.savefig("outputs/figures/grafico_pcds_tipos.png", format="png", dpi=300, bbox_inches="tight")
 plt.show()
-
-
-for string in RESULTADOS:
-    log_filepath = "outputs/logs/resumo_tipos_deficiencia.txt"
-    with open(log_filepath, "a", encoding="utf-8") as f:
-        f.write(string + "\n")
-
-print(f"\n[OK] Resumo salvo com sucesso em: '{log_filepath}'")
