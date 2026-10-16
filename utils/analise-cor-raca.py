@@ -218,3 +218,53 @@ plt.savefig(
     bbox_inches="tight",
 )
 plt.show()
+
+# --- PLOTAGEM DO GRÁFICO DE PIZZA/ROSCA (GÉNERO PCDs) ---
+labels_genero = ["Masculino", "Feminino"]
+valores_genero = [pcd_homens, pcd_mulheres]
+cores_genero = ["#1B365D", "#972738"]  # Paleta azul institucional padronizada
+
+plt.rcParams["font.sans-serif"] = "Arial"
+fig, ax = plt.subplots(figsize=(6, 5), dpi=100)
+
+# Gráfico estilo Rosca (Donut Chart)
+wedges, texts, autotexts = ax.pie(
+    valores_genero,
+    labels=labels_genero,
+    autopct="%1.1f%%",
+    startangle=90,
+    colors=cores_genero,
+    pctdistance=0.75,
+    wedgeprops=dict(width=0.5, edgecolor="white", linewidth=2),
+    textprops=dict(fontsize=10),
+)
+
+# Estilização das percentagens dentro das fatias
+for autotext in autotexts:
+    autotext.set_color("white")
+    autotext.set_fontweight("bold")
+    autotext.set_fontsize(10)
+
+ax.set_title(
+    "Distribuição por Género entre Trabalhadores PCD\nArapiraca - 2025",
+    fontsize=11,
+    fontweight="bold",
+    pad=15,
+    loc="left",
+)
+
+plt.tight_layout()
+
+# Guardar os ficheiros nas pastas de outputs do projeto
+plt.savefig(
+    "outputs/figures/grafico_genero_pcd.pdf",
+    format="pdf",
+    bbox_inches="tight",
+)
+plt.savefig(
+    "outputs/figures/grafico_genero_pcd.png",
+    format="png",
+    dpi=300,
+    bbox_inches="tight",
+)
+plt.show()

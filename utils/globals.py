@@ -10,6 +10,7 @@ COLUMNS = [
   "Tipo Deficiência - Código",
   "Tipo Vínculo - Código",
   "CBO 2002 Ocupação - Código",
+  "Natureza Jurídica - Código",
   "Vl Rem Média Nom",
   "Vl Rem Média (SM)",
   "CNAE 2.0 Classe - Código",
