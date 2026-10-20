@@ -1,0 +1,91 @@
+import pandas as pd
+import sys
+from pathlib import Path
+
+sys.path.append(str(Path(__file__).resolve().parent.parent))
+from globals import *
+
+RESULTADOS = []
+
+graus = {
+    1: "Analfabeto",
+    2: "Até 5ª Incompleto",
+    3: "5ª Completo Fundamental",
+    4: "6ª a 9ª Fundamental",
+    5: "Fundamental Completo",
+    6: "Médio Incompleto",
+    7: "Médio Completo",
+    8: "Superior Incompleto",
+    9: "Superior Completo",
+}
+
+# --- PROCESSAMENTO PARA PCDs ---
+RESULTADOS.append("--- INDICADORES SALARIAIS POR ESCOLARIDADE (PCDs) ---")
+
+for cod_grau, nome_grau in graus.items():
+    # Remuneração Nominal (> 0)
+    nom_pcd = DATAFRAME_PCD.loc[
+        (DATAFRAME_PCD["Vl Rem Média Nom"] > 0)
+        & (DATAFRAME_PCD["Escolaridade Após 2005 - Código"] == cod_grau),
+        "Vl Rem Média Nom",
+    ]
+
+    # Remuneração em Salários Mínimos (> 0)
+    sm_pcd = DATAFRAME_PCD.loc[
+        (DATAFRAME_PCD["Vl Rem Média (SM)"] > 0)
+        & (DATAFRAME_PCD["Escolaridade Após 2005 - Código"] == cod_grau),
+        "Vl Rem Média (SM)",
+    ]
+
+    if not nom_pcd.empty:
+        media_nom = nom_pcd.mean()
+        mediana_nom = nom_pcd.median()
+        media_sm = sm_pcd.mean()
+        mediana_sm = sm_pcd.median()
+
+        RESULTADOS.append(
+            f"{nome_grau:<23} -> Média Nom: R$ {media_nom:8.2f} | Mediana Nom: R$ {mediana_nom:8.2f} | "
+            f"Média SM: {media_sm:5.2f} SM | Mediana SM: {mediana_sm:5.2f} SM"
+        )
+    else:
+        RESULTADOS.append(
+            f"{nome_grau:<23} -> Sem registros salariais válidos (> 0)"
+        )
+
+
+# --- PROCESSAMENTO PARA NÃO-PCDs ---
+RESULTADOS.append("\n--- INDICADORES SALARIAIS POR ESCOLARIDADE (NÃO-PCDs) ---")
+
+for cod_grau, nome_grau in graus.items():
+    # Remuneração Nominal (> 0)
+    nom_nao_pcd = DATAFRAME_NAO_PCD.loc[
+        (DATAFRAME_NAO_PCD["Vl Rem Média Nom"] > 0)
+        & (DATAFRAME_NAO_PCD["Escolaridade Após 2005 - Código"] == cod_grau),
+        "Vl Rem Média Nom",
+    ]
+
+    # Remuneração em Salários Mínimos (> 0)
+    sm_nao_pcd = DATAFRAME_NAO_PCD.loc[
+        (DATAFRAME_NAO_PCD["Vl Rem Média (SM)"] > 0)
+        & (DATAFRAME_NAO_PCD["Escolaridade Após 2005 - Código"] == cod_grau),
+        "Vl Rem Média (SM)",
+    ]
+
+    if not nom_nao_pcd.empty:
+        media_nom = nom_nao_pcd.mean()
+        mediana_nom = nom_nao_pcd.median()
+        media_sm = sm_nao_pcd.mean()
+        mediana_sm = sm_nao_pcd.median()
+
+        RESULTADOS.append(
+            f"{nome_grau:<23} -> Média Nom: R$ {media_nom:8.2f} | Mediana Nom: R$ {mediana_nom:8.2f} | "
+            f"Média SM: {media_sm:5.2f} SM | Mediana SM: {mediana_sm:5.2f} SM"
+        )
+    else:
+        RESULTADOS.append(
+            f"{nome_grau:<23} -> Sem registros salariais válidos (> 0)"
+        )
+
+
+# Salva o resumo de logs no diretório do projeto
+salvar_log("indicadores_salariais_por_escolaridade", RESULTADOS)
